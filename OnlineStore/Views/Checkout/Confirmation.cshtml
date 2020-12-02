@@ -1,0 +1,46 @@
+﻿@model IEnumerable<OnlineStore.ViewModels.CartItemsViewModel>
+
+@{
+    ViewBag.Title = "Confirmation";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Order successfully placed!</h2>
+<br/>
+<h5>Order Summary</h5>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.ProductName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Quantity)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.TotalPrice)
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProductName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            <td>
+                R @Html.DisplayFor(modelItem => item.ListPrice) (ZAR)
+            </td>
+        </tr>
+    }
+
+    <tr>
+        <td></td>
+        <td><b>Total Paid</b></td>
+        <td><b>R @ViewBag.TotalPrice (ZAR)</b></td>
+    </tr>
+
+</table>
+

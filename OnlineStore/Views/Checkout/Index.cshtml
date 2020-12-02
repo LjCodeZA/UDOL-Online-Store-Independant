@@ -1,0 +1,154 @@
+﻿@model IEnumerable<OnlineStore.ViewModels.CartItemsViewModel>
+
+@{
+    ViewBag.Title = "Checkout";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<html>
+<head>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#btnPay').click(function () {
+                $('#btnPay').html('<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Pay').addClass('disabled');
+                setTimeout(function () {
+                    //Do some stuff after delay
+                    $('#btnPay').html('Pay').removeClass('disabled').addClass('enabled');
+                    $('#lblPaymentSuccess').css('display', 'inline');
+                    setTimeout(function () {
+                        var cartList = $('#CartItems').text();
+                        var redirect = "/Checkout/Confirmation";
+                        $.redirectPost(redirect, { cartData: cartList });
+                    }, 3000);
+                }, 3000);
+            });
+
+            $('#btnClosePayment').click(function () {
+                $('#lblPaymentSuccess').css('display', 'none');
+            });
+
+            $.extend(
+                {
+                redirectPost: function(location, args)
+                {
+                    var form = $('<form></form>');
+                    form.attr("method", "post");
+                    form.attr("action", location);
+
+                    $.each( args, function( key, value ) {
+                        var field = $('<input></input>');
+
+                        field.attr("type", "hidden");
+                        field.attr("name", key);
+                        field.attr("value", value);
+
+                        form.append(field);
+                    });
+                    $(form).appendTo('body').submit();
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+
+    <h2>Checkout</h2>
+
+    <p>
+        @Html.ActionLink("Create New", "Create")
+    </p>
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ProductId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProductName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Quantity)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalPrice)
+            </th>
+            @*<th></th>*@
+        </tr>
+
+        @foreach (var item in Model)
+        {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.ProductId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ProductName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Quantity)
+        </td>
+        <td>
+           R @Html.DisplayFor(modelItem => item.ListPrice) (ZAR)
+        </td>
+        @*<td>
+            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+        </td>*@
+    </tr>
+        }
+    <tr>
+        <td></td>
+        <td></td>
+        <td><b>Total</b></td>
+        <td><b>R @ViewBag.TotalPrice (ZAR)</b></td>
+    </tr>
+    </table>
+
+    <button id="btnProceedToPayment" type="button" class="btn btn-dark" data-toggle="modal" data-target="#exampleModal" data-whatever="@@mdo">Proceed to payment</button>
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Payment Method</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="card-number" class="col-form-label">Card Number</label>
+                            <input type="text" class="form-control" id="card-number">
+                        </div>
+                        <div class="form-group">
+                            <label for="card-holder" class="col-form-label">Card Holder Name</label>
+                            <input type="text" class="form-control" id="card-holder">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="expiry-date">Expiry Date</label>
+                                <input type="text" class="form-control" id="expiry-date">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="cvv-number">CVV Number</label>
+                                <input type="text" class="form-control" id="cvv-number">
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button id="btnClosePayment" type="button" class="btn btn-dark" data-dismiss="modal">Close</button>
+                    <button id="btnPay" type="button" class="btn btn-dark">
+                        Pay
+                    </button>
+                </div>
+                <span id="lblPaymentSuccess" class="badge badge-success" style="display: none;">Payment Successfull. Redirecting in 3 seconds...</span>
+            </div>
+        </div>
+    </div>
+
+    <p id="CartItems" style="visibility: hidden;">@Model.ElementAt(0).OriginalCartString</p>
+</body>
+</html>

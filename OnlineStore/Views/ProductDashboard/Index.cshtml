@@ -1,0 +1,199 @@
+﻿@model IEnumerable<OnlineStore.ViewModels.ProductDashboardViewModel>
+
+@{
+    ViewBag.Title = "Product Dashboard";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+    <style>
+        .price {
+            color: grey;
+            font-size: 22px;
+        }
+
+        .card button {
+            border: none;
+            outline: 0;
+            padding: 12px;
+            color: white;
+            background-color: #000;
+            text-align: center;
+            cursor: pointer;
+            width: 100%;
+            font-size: 18px;
+        }
+
+        .resize-image {
+            width: 100%;
+            height: 100%;
+        }
+
+        .card button:hover {
+            opacity: 0.7;
+        }
+
+        .cartBox {
+            position: fixed;
+            right: 10px;
+            top: 60px;
+            z-index: 5000;
+            width: 200px;
+            background-color: white;
+            border: 1px solid black;
+        }
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(document).on("click", "button", function () {
+                
+                if (!this.id.includes("Product-")) {
+                    return;
+                }
+
+                var arr = this.id.split("-");
+                var productId = arr[1];
+
+                var productQuantityId = "Product-" + productId + "-Quantity";
+                var productQuantityVal = $('#' + productQuantityId).val();
+                var productNameId = "Product-" + productId + "-Name";
+                var productNameVal = $('#' + productNameId).text();
+
+                var cartList = $('#CartItems').val();
+                if (cartList == "" || cartList == null) {
+                    cartList = productId + "|" + productQuantityVal + "|" + productNameVal;
+                } else {
+                    cartList = cartList + "#" + productId + "|" + productQuantityVal + "|" + productNameVal;
+                }
+
+                $('#CartItems').val(cartList);
+
+                UpdateCartDisplay(cartList);
+
+                function UpdateCartDisplay(cartList) {
+                    var moreThanOneItem = false;
+                    var displayHTML = "";
+
+                    if (cartList.includes("#")) {
+                        moreThanOneItem = true;
+                    }
+                    else {
+                        moreThanOneItem = false;
+                    }
+
+                    displayHTML += "<ul class=\"list-group\">"
+                    if (moreThanOneItem) {
+                        itemsplit = cartList.split("#");
+
+                        for (i = 0; i < itemsplit.length; i++) {
+                            var individualItem = itemsplit[i].split("|");
+                            var productId = individualItem[0];
+                            var quantity = individualItem[1];
+                            var productName = individualItem[2];
+
+                            displayHTML += "<li class=\"list-group-item d-flex justify-content-between align-items-center\">";
+
+                            displayHTML += productName + "<span class=\"badge badge-dark badge-pill\">" + quantity + "</span>";
+
+                            displayHTML += "</li>";
+                        }
+                    } else {
+                        var individualItem = cartList.split("|");
+                        var productId = individualItem[0];
+                        var quantity = individualItem[1];
+                        var productName = individualItem[2];
+
+                        displayHTML += "<li class=\"list-group-item d-flex justify-content-between align-items-center\">";
+
+                        displayHTML += productName + "<span class=\"badge badge-dark badge-pill\">" + quantity + "</span>";
+
+                        displayHTML += "</li>";
+                    }
+                    displayHTML += "</ul>";
+                    $('#cartContent').html(displayHTML);
+                }
+            });
+
+            $('#btnCheckout').click(function () {
+                var cartList = $('#CartItems').val();
+
+                var redirect = '/Checkout/Index';
+                $.redirectPost(redirect, {cartData: cartList});
+            });
+
+            $.extend(
+                {
+                redirectPost: function(location, args)
+                {
+                    var form = $('<form></form>');
+                    form.attr("method", "post");
+                    form.attr("action", location);
+
+                    $.each( args, function( key, value ) {
+                        var field = $('<input></input>');
+
+                        field.attr("type", "hidden");
+                        field.attr("name", key);
+                        field.attr("value", value);
+
+                        form.append(field);
+                    });
+                    $(form).appendTo('body').submit();
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container-fluid">
+
+        @{int max = Model.Count();
+            int counter = 1;
+        }
+        <div class="card-group">
+            @foreach (var productDashboardItem in Model)
+            {
+
+                @:<div class="card">
+                    @:<img src="@productDashboardItem.ImageURL" class="card-img-top" alt="Some image">
+                    @:<div class="card-body">
+                    @:<h5 class="card-title" id="Product-@productDashboardItem.ProductId-Name">@productDashboardItem.Name</h5>
+                    @:<h6 class="card-text text-left font-weight-bold" id="Product-@productDashboardItem.ProductId-price">R @productDashboardItem.ListPrice (ZAR)</h6>
+                    @:<p class="card-text">@productDashboardItem.Description</p>
+                    @:<p class="card-text">Quantity <input type="number" id="Product-@productDashboardItem.ProductId-Quantity" name="quantity" min="1" value="1"></p>
+                    @:<p></p>
+                    @:<p><button id="Product-@productDashboardItem.ProductId-addToCart">Add to Cart</button></p>
+                @:</div>
+                @:</div>
+
+
+                if (counter % 3 == 0 || counter == max)
+                {
+                @:</div>
+            }
+            if (counter % 3 == 0)
+            {
+                @:<div class="card-group">
+                }
+
+                counter++;
+            }
+
+
+        </div>
+        <p id="CartItems" style="visibility: hidden;"></p>
+
+        <div class="card float-right cartBox" style="width: 20rem;" id="CartItemDisplay">
+            <div class="card-body">
+                <h5 class="card-title">Shopping Cart</h5>
+                <p class="card-text" id="cartContent">Empty Cart</p>
+                <a id="btnCheckout" class="btn btn-dark">Checkout</a>
+            </div>
+        </div>
+
+</body>
+</html>
